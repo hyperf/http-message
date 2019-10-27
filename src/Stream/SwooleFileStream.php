@@ -12,29 +12,36 @@ declare(strict_types=1);
 
 namespace Hyperf\HttpMessage\Stream;
 
+use Hyperf\HttpServer\Exception\Http\FileException;
 use Psr\Http\Message\StreamInterface;
 
-class SwooleStream implements StreamInterface
+class SwooleFileStream implements StreamInterface, FileInterface
 {
-    /**
-     * @var string
-     */
-    protected $contents;
-
     /**
      * @var string
      */
     protected $size;
 
     /**
-     * SwooleStream constructor.
-     *
-     * @param string $contents
+     * @var \SplFileInfo
      */
-    public function __construct(string $contents = '')
+    protected $file;
+
+    /**
+     * SwooleFileStream constructor.
+     *
+     * @param \SplFileInfo|string $file
+     */
+    public function __construct($file)
     {
-        $this->contents = $contents;
-        $this->size = strlen($this->contents);
+        if (! $file instanceof \SplFileInfo) {
+            $file = new \SplFileInfo($file);
+        }
+        if (! $file->isReadable()) {
+            throw new FileException('File must be readable.');
+        }
+        $this->file = $file;
+        $this->size = $file->getSize();
     }
 
     /**
@@ -84,7 +91,7 @@ class SwooleStream implements StreamInterface
     public function getSize()
     {
         if (! $this->size) {
-            $this->size = strlen($this->getContents());
+            $this->size = filesize($this->getContents());
         }
         return $this->size;
     }
@@ -142,9 +149,9 @@ class SwooleStream implements StreamInterface
      * If the stream is not seekable, this method will raise an exception;
      * otherwise, it will perform a seek(0).
      *
-     * @see seek()
-     * @see http://www.php.net/manual/en/function.fseek.php
      * @throws \RuntimeException on failure
+     * @see http://www.php.net/manual/en/function.fseek.php
+     * @see seek()
      */
     public function rewind()
     {
@@ -207,7 +214,7 @@ class SwooleStream implements StreamInterface
      */
     public function getContents()
     {
-        return $this->contents;
+        return $this->getFilename();
     }
 
     /**
@@ -224,5 +231,10 @@ class SwooleStream implements StreamInterface
     public function getMetadata($key = null)
     {
         throw new \BadMethodCallException('Not implemented');
+    }
+
+    public function getFilename(): string
+    {
+        return $this->file->getPathname();
     }
 }
