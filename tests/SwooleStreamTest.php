@@ -15,7 +15,7 @@ namespace HyperfTest\HttpMessage;
 use Hyperf\HttpMessage\Server\Response;
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;
-use Hyperf\HttpServer\ResponseEmitter;
+use Hyperf\Engine\ResponseEmitter;
 use Mockery;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
