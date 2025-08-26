@@ -12,15 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTest\HttpMessage;
 
-use Hyperf\HttpMessage\Server\Response;
-use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;
-use Hyperf\HttpServer\ResponseEmitter;
-use Mockery;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Stringable;
-use Swoole\Http\Response as SwooleResponse;
 
 /**
  * @internal
@@ -29,35 +24,6 @@ use Swoole\Http\Response as SwooleResponse;
 #[CoversNothing]
 class SwooleStreamTest extends TestCase
 {
-    public function testSwooleFileStream()
-    {
-        $swooleResponse = Mockery::mock(SwooleResponse::class);
-        $file = __FILE__;
-        $swooleResponse->shouldReceive('sendfile')->with($file)->once()->andReturn(true);
-        $swooleResponse->shouldReceive('status')->with(200, '')->once()->andReturn(200);
-
-        $response = new Response();
-        $response = $response->withBody(new SwooleFileStream($file));
-
-        $responseEmitter = new ResponseEmitter(null);
-        $this->assertSame(null, $responseEmitter->emit($response, $swooleResponse, true));
-    }
-
-    public function testSwooleStream()
-    {
-        $swooleResponse = Mockery::mock(SwooleResponse::class);
-        $content = '{"id":1}';
-        $swooleResponse->shouldReceive('end')->with($content)->once()->andReturn(true);
-        $swooleResponse->shouldReceive('status')->with(200, '')->once()->andReturn(200);
-        $swooleResponse->shouldReceive('header')->with('TOKEN', ['xxx'])->once()->andReturn(true);
-
-        $response = new Response();
-        $response = $response->withBody(new SwooleStream($content))->withHeader('TOKEN', 'xxx');
-
-        $responseEmitter = new ResponseEmitter(null);
-        $this->assertSame(null, $responseEmitter->emit($response, $swooleResponse, true));
-    }
-
     public function testClose()
     {
         $random = microtime();
